@@ -44,5 +44,6 @@ public class Parser {
     private static void parseLogFile(File file) {
         System.out.println("Парсинг файла: " + file.getName());
         // Реализация парсинга лог-файла
+        // Path C:\Users\ASHvetsov\git\Parser\logs.txt
     }
 }
