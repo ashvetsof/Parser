@@ -1,0 +1,141 @@
+23:15:15.282: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/master:refs/heads/master --set-upstream
+Authentication request was cancelled
+Authentication request was cancelled
+remote: No anonymous write access.
+fatal: Authentication failed for 'https://github.com/ashvetsof/access-log-parser.git/'
+23:16:39.493: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/master:refs/heads/master --set-upstream
+Enumerating objects: 5, done.
+Counting objects:  20% (1/5)
+Counting objects:  40% (2/5)
+Counting objects:  60% (3/5)
+Counting objects:  80% (4/5)
+Counting objects: 100% (5/5)
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects:  33% (1/3)
+Compressing objects:  66% (2/3)
+Compressing objects: 100% (3/3)
+Compressing objects: 100% (3/3), done.
+Writing objects:  20% (1/5)
+Writing objects:  40% (2/5)
+Writing objects:  60% (3/5)
+Writing objects:  80% (4/5)
+Writing objects: 100% (5/5)
+Writing objects: 100% (5/5), 487 bytes | 487.00 KiB/s, done.
+Total 5 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+To https://github.com/ashvetsof/access-log-parser.git
+*	refs/heads/master:refs/heads/master	[new branch]
+branch 'master' set up to track 'origin/master'.
+Done
+23:20:33.683: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/master:master
+To https://github.com/ashvetsof/access-log-parser.git
+=	refs/heads/master:refs/heads/master	[up to date]
+Done
+23:27:28.999: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false commit -F C:\Users\ASHvetsov\AppData\Local\Temp\git-commit-msg-.txt --amend --
+[1-adding-readme 4626533] 1cppy
+ Date: Mon Aug 11 23:10:33 2025 +0300
+ 2 files changed, 11 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 src/Main.java
+23:28:23.416: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/1-adding-readme:refs/heads/1-adding-readme --set-upstream
+Enumerating objects: 5, done.
+Counting objects:  20% (1/5)
+Counting objects:  40% (2/5)
+Counting objects:  60% (3/5)
+Counting objects:  80% (4/5)
+Counting objects: 100% (5/5)
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects:  33% (1/3)
+Compressing objects:  66% (2/3)
+Compressing objects: 100% (3/3)
+Compressing objects: 100% (3/3), done.
+Writing objects:  20% (1/5)
+Writing objects:  40% (2/5)
+Writing objects:  60% (3/5)
+Writing objects:  80% (4/5)
+Writing objects: 100% (5/5)
+Writing objects: 100% (5/5), 491 bytes | 245.00 KiB/s, done.
+Total 5 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a pull request for '1-adding-readme' on GitHub by visiting:        
+remote:      https://github.com/ashvetsof/access-log-parser/pull/new/1-adding-readme        
+remote: 
+To https://github.com/ashvetsof/access-log-parser.git
+*	refs/heads/1-adding-readme:refs/heads/1-adding-readme	[new branch]
+branch '1-adding-readme' set up to track 'origin/1-adding-readme'.
+Done
+23:33:46.644: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/1-adding-readme:1-adding-readme
+Enumerating objects: 4, done.
+Counting objects:  25% (1/4)
+Counting objects:  50% (2/4)
+Counting objects:  75% (3/4)
+Counting objects: 100% (4/4)
+Counting objects: 100% (4/4), done.
+Delta compression using up to 8 threads
+Compressing objects:  33% (1/3)
+Compressing objects:  66% (2/3)
+Compressing objects: 100% (3/3)
+Compressing objects: 100% (3/3), done.
+Writing objects:  33% (1/3)
+Writing objects:  66% (2/3)
+Writing objects: 100% (3/3)
+Writing objects: 100% (3/3), 460 bytes | 460.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+To https://github.com/ashvetsof/access-log-parser.git
+ 	refs/heads/1-adding-readme:refs/heads/1-adding-readme	4626533..fed7513
+Done
+23:50:40.322: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false commit -F C:\Users\ASHvetsov\AppData\Local\Temp\git-commit-msg-.txt --amend --
+[1-adding-readme e38c5d9] copy3
+ Date: Mon Aug 11 23:30:26 2025 +0300
+ 1 file changed, 3 insertions(+)
+ create mode 100644 README.md
+23:50:54.888: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/1-adding-readme:1-adding-readme
+error: failed to push some refs to 'https://github.com/ashvetsof/access-log-parser.git'
+To https://github.com/ashvetsof/access-log-parser.git
+!	refs/heads/1-adding-readme:refs/heads/1-adding-readme	[rejected] (non-fast-forward)
+Done
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+23:51:16.400: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false fetch origin --recurse-submodules=no --progress --prune
+remote: Enumerating objects: 4, done.        
+remote: Counting objects:  25% (1/4)        
+remote: Counting objects:  50% (2/4)        
+remote: Counting objects:  75% (3/4)        
+remote: Counting objects: 100% (4/4)        
+remote: Counting objects: 100% (4/4), done.        
+remote: Compressing objects:  33% (1/3)        
+remote: Compressing objects:  66% (2/3)        
+remote: Compressing objects: 100% (3/3)        
+remote: Compressing objects: 100% (3/3), done.        
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)        
+From https://github.com/ashvetsof/access-log-parser
+   4237fac..b15ea90  master     -> origin/master
+23:51:19.870: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false merge origin/1-adding-readme --no-stat -v
+23:51:22.495: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false push --progress --porcelain origin refs/heads/1-adding-readme:1-adding-readme
+Enumerating objects: 2, done.
+Counting objects:  50% (1/2)
+Counting objects: 100% (2/2)
+Counting objects: 100% (2/2), done.
+Delta compression using up to 8 threads
+Compressing objects:  50% (1/2)
+Compressing objects: 100% (2/2)
+Compressing objects: 100% (2/2), done.
+Writing objects:  50% (1/2)
+Writing objects: 100% (2/2)
+Writing objects: 100% (2/2), 337 bytes | 337.00 KiB/s, done.
+Total 2 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/1)        
+remote: Resolving deltas: 100% (1/1)        
+remote: Resolving deltas: 100% (1/1), done.        
+To https://github.com/ashvetsof/access-log-parser.git
+ 	refs/heads/1-adding-readme:refs/heads/1-adding-readme	fed7513..02f05ab
+Done
+23:53:06.779: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false checkout master --
+Your branch is behind 'origin/master' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+Switched to branch 'master'
+23:53:33.231: [C:\Users\ASHvetsov\IdeaProjects\AccessLogParser\Parser] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false checkout 1-adding-readme --
+Your branch is up to date with 'origin/1-adding-readme'.
