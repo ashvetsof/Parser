@@ -49,7 +49,7 @@ public class OS {
                     );
                 }
 
-                // Создаем объект LogEntry и добавляем в статистику
+                // LogEntry и добавляем в статистику
                 LogEntry logEntry = new LogEntry(line);
                 statistics.addEntry(logEntry);
 
@@ -61,18 +61,18 @@ public class OS {
             if (totalLines == 0) {
                 System.out.println("Файл пуст.");
             } else {
-                System.out.println("\nРезультаты анализа:");
+                System.out.println("\nРезультаты:");
                 System.out.println("Всего строк: " + totalLines);
-                System.out.printf("Средний объем трафика за час: %.2f байт/час\n", statistics.getTrafficRate());
+                System.out.printf("трафик за час: %.2f байт/час\n", statistics.getTrafficRate());
 
-                // Выводим статистику по браузерам и ОС
+                // браузеры и ОС
                 System.out.println("\nСтатистика по браузерам:");
                 statistics.printBrowserStatistics();
 
                 System.out.println("\nСтатистика по ОС:");
                 statistics.printOsStatistics();
 
-                // Дополнительная статистика
+                // страницы
                 System.out.println("\nСуществующие страницы сайта:");
                 Set<String> existingPages = statistics.getExistingPages();
                 for (String page : existingPages) {
@@ -91,7 +91,7 @@ public class OS {
     }
 }
 
-// Класс исключения для слишком длинных строк
+// Класс исключения длинных строк
 class LineTooLongException extends RuntimeException {
     public LineTooLongException(String message) {
         super(message);
@@ -146,7 +146,6 @@ class LogEntry {
             return LocalDateTime.now();
         }
     }
-
     private HttpMethod parseHttpMethod(String methodStr) {
         try {
             return HttpMethod.valueOf(methodStr);
@@ -166,7 +165,7 @@ class LogEntry {
     public UserAgent getUserAgent() { return userAgent; }
 }
 
-// Класс для представления User-Agent
+// Класс User-Agent
 class UserAgent {
     private final String osType;
     private final String browser;
@@ -231,9 +230,13 @@ class Statistics {
     private Map<String, Integer> browserStats;
     private Map<String, Integer> osStats;
 
-    // Новые поля для хранения существующих страниц и статистики ОС
+    // Существующие поля страниц и статистики ОС
     private Set<String> existingPages;
     private Map<String, Integer> osFrequency;
+
+    // Новые поля несуществующих страниц и статистики браузеров
+    private Set<String> notFoundPages;
+    private Map<String, Integer> browserFrequency;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -243,13 +246,17 @@ class Statistics {
         this.osStats = new HashMap<String, Integer>();
         this.existingPages = new HashSet<String>();
         this.osFrequency = new HashMap<String, Integer>();
+
+        // Инициализация новых полей
+        this.notFoundPages = new HashSet<String>();
+        this.browserFrequency = new HashMap<String, Integer>();
     }
 
     public void addEntry(LogEntry entry) {
         // Добавляем трафик
         this.totalTraffic += entry.getDataSize();
 
-        // Обновляем minTime и maxTime
+        // Обновляем min и max пармтеры
         LocalDateTime entryTime = entry.getDateTime();
         if (minTime == null || entryTime.isBefore(minTime)) {
             minTime = entryTime;
@@ -258,7 +265,7 @@ class Statistics {
             maxTime = entryTime;
         }
 
-        // Собираем статистику по браузерам и ОС
+        // статистика по браузерам и ОС
         UserAgent userAgent = entry.getUserAgent();
         String browser = userAgent.getBrowser();
         String os = userAgent.getOsType();
@@ -266,17 +273,25 @@ class Statistics {
         browserStats.put(browser, browserStats.getOrDefault(browser, 0) + 1);
         osStats.put(os, osStats.getOrDefault(os, 0) + 1);
 
-        // Добавляем существующие страницы (код ответа 200)
+        // страницы с ответом 200
         if (entry.getResponseCode() == 200) {
             existingPages.add(entry.getPath());
         }
 
-        // Собираем частоту операционных систем
+        // страницы с ответом 404
+        if (entry.getResponseCode() == 404) {
+            notFoundPages.add(entry.getPath());
+        }
+
+        // Собираем ОС
         osFrequency.put(os, osFrequency.getOrDefault(os, 0) + 1);
+
+        // Собираем браузеры
+        browserFrequency.put(browser, browserFrequency.getOrDefault(browser, 0) + 1);
     }
 
     /**
-     * Возвращает список всех существующих страниц сайта (с кодом ответа 200)
+     * Возврат страниц с ответом 200
      * @return Set<String> содержащий адреса существующих страниц
      */
     public Set<String> getExistingPages() {
@@ -284,7 +299,15 @@ class Statistics {
     }
 
     /**
-     * Возвращает статистику операционных систем в виде долей (от 0 до 1)
+     * Возврат страниц с ответом 404
+     * @return Set<String> содержащий адреса несуществующих страниц
+     */
+    public Set<String> getNotFoundPages() {
+        return new HashSet<String>(notFoundPages);
+    }
+
+    /**
+     * Возврат ОС
      * @return Map<String, Double> где ключ - название ОС, значение - доля от общего количества
      */
     public Map<String, Double> getOsStatistics() {
@@ -307,6 +330,30 @@ class Statistics {
         return osProportions;
     }
 
+    /**
+     * Возврат браузеров
+     * @return Map<String, Double> где ключ - название браузера, значение - процент от общего количества
+     */
+    public Map<String, Double> getBrowserStatistics() {
+        Map<String, Double> browserProportions = new HashMap<String, Double>();
+
+        // Вычисляем общее количество записей
+        int totalRequests = 0;
+        for (int count : browserFrequency.values()) {
+            totalRequests += count;
+        }
+
+        // Рассчитываем процент для каждого браузера
+        for (Map.Entry<String, Integer> entry : browserFrequency.entrySet()) {
+            String browser = entry.getKey();
+            int count = entry.getValue();
+            double proportion = (double) count / totalRequests;
+            browserProportions.put(browser, proportion);
+        }
+
+        return browserProportions;
+    }
+
     public double getTrafficRate() {
         if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
             return 0.0;
@@ -325,13 +372,11 @@ class Statistics {
             System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
         }
     }
-
     public void printOsStatistics() {
         for (Map.Entry<String, Integer> entry : osStats.entrySet()) {
             System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
         }
     }
-
     // Геттеры
     public int getTotalTraffic() { return totalTraffic; }
     public LocalDateTime getMinTime() { return minTime; }
