@@ -1,12 +1,14 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Locale;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -14,31 +16,39 @@ import java.util.regex.Pattern;
 
 public class OS {
     public static void main(String[] args) {
-        String path;
+        String inputPath;
+        String outputPath;
         if (args.length > 0) {
-            path = args[0];
+            inputPath = args[0];
         } else {
-            path = "access.log";
+            inputPath = "access.log";
         }
-
-        analyzeFile(path);
+        if (args.length > 1) {
+            outputPath = args[1];
+        } else {
+            outputPath = "analysis_result.txt";
+        }
+        analyzeFile(inputPath, outputPath);
     }
 
-    public static void analyzeFile(String path) {
-        File file = new File(path);
-        System.out.println("Проверка лога: " + file.getAbsolutePath());
+    public static void analyzeFile(String inputPath, String outputPath) {
+        File inputFile = new File(inputPath);
+        System.out.println("Проверка лога: " + inputFile.getAbsolutePath());
+        System.out.println("Результат будет сохранен в: " + outputPath);
 
-        Statistics statistics = new Statistics();
-
+        Statistics stats = new Statistics();
         try (
-                FileReader fileReader = new FileReader(file);
-                BufferedReader reader = new BufferedReader(fileReader)
-        ) {
+                FileReader fileReader = new FileReader(inputFile);
+                BufferedReader reader = new BufferedReader(fileReader);
+                PrintWriter writer = new PrintWriter(new FileWriter(outputPath))
+        )
+        {
             int totalLines = 0;
             String line;
+            writer.println("Анализ лога: " + inputPath);
+            writer.println("=" .repeat(50));
 
             System.out.println("Обработка файла...");
-
             while ((line = reader.readLine()) != null) {
                 int length = line.length();
                 totalLines++;
@@ -48,50 +58,84 @@ public class OS {
                             "Строка #" + totalLines + " превышает 1024 символа. Длина: " + length
                     );
                 }
-
-                // LogEntry и добавляем в статистику
+                // объект LogEntry и добавляем в статистику
                 LogEntry logEntry = new LogEntry(line);
-                statistics.addEntry(logEntry);
+                stats.addEntry(logEntry);
 
                 if (totalLines % 1000 == 0) {
                     System.out.println("Обработано строк: " + totalLines);
                 }
             }
-
             if (totalLines == 0) {
-                System.out.println("Файл пуст.");
+                writer.println("Файл пуст.");
             } else {
-                System.out.println("\nРезультаты:");
-                System.out.println("Всего строк: " + totalLines);
-                System.out.printf("трафик за час: %.2f байт/час\n", statistics.getTrafficRate());
+                writer.println("\nРезультаты анализа:");
+                writer.println("Всего строк: " + totalLines);
+                writer.printf("Средний объем трафика за час: %.2f байт/час\n", stats.getTrafficRate());
 
-                // браузеры и ОС
-                System.out.println("\nСтатистика по браузерам:");
-                statistics.printBrowserStatistics();
+                // Новые метрики
+                writer.printf("Среднее количество посещений сайта за час: %.2f\n", stats.getAverageVisitsPerHour());
+                writer.printf("Среднее количество ошибочных запросов в час: %.2f\n", stats.getAverageErrorRequestsPerHour());
+                writer.printf("Средняя посещаемость одним пользователем: %.2f\n", stats.getAverageVisitsPerUser());
 
-                System.out.println("\nСтатистика по ОС:");
-                statistics.printOsStatistics();
+                // статистик по браузерам и ОС
+                writer.println("\nСтатистика по браузерам:");
+                printBrowserStatisticsToFile(stats, writer);
+                writer.println("\nСтатистика по операционным системам:");
+                printOsStatisticsToFile(stats, writer);
 
-                // страницы
-                System.out.println("\nСуществующие страницы сайта:");
-                Set<String> existingPages = statistics.getExistingPages();
+                // список существующих страниц
+                Set<String> existingPages = stats.getExistingPages();
+                writer.println("\nСуществующие страницы сайта (" + existingPages.size() + "):");
                 for (String page : existingPages) {
-                    System.out.println("  " + page);
+                    writer.println("  " + page);
                 }
 
-                System.out.println("\nСтатистика ОС (доли):");
-                Map<String, Double> osStats = statistics.getOsStatistics();
-                for (Map.Entry<String, Double> entry : osStats.entrySet()) {
-                    System.out.printf("  %s: %.2f%%\n", entry.getKey(), entry.getValue() * 100);
+                // список несуществующих страниц
+                Set<String> notFoundPages = stats.getNotFoundPages();
+                writer.println("\nНесуществующие страницы сайта (" + notFoundPages.size() + "):");
+                for (String page : notFoundPages) {
+                    writer.println("  " + page);
                 }
+
+                // статистика ОС
+                Map<String, Double> osStatistics = stats.getOsStatistics();
+                writer.println("\nСтатистика операционных систем (%):");
+                for (Map.Entry<String, Double> entry : osStatistics.entrySet()) {
+                    writer.printf("  %s: %.2f%%\n", entry.getKey(), entry.getValue() * 100);
+                }
+
+                // статистика браузеров
+                Map<String, Double> browserStatistics = stats.getBrowserStatistics();
+                writer.println("\nСтатистика браузеров (проценты):");
+                for (Map.Entry<String, Double> entry : browserStatistics.entrySet()) {
+                    writer.printf("  %s: %.2f%%\n", entry.getKey(), entry.getValue() * 100);
+                }
+
+                writer.println("\n" + "=" .repeat(50));
+                writer.println("Анализ завершен");
             }
+            System.out.println("Результаты сохранены в: " + outputPath);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
+    // вывод в файл
+    private static void printBrowserStatisticsToFile(Statistics stats, PrintWriter writer) {
+        for (Map.Entry<String, Integer> entry : stats.getBrowserStats().entrySet()) {
+            writer.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
+        }
+    }
+    private static void printOsStatisticsToFile(Statistics stats, PrintWriter writer) {
+        for (Map.Entry<String, Integer> entry : stats.getOsStats().entrySet()) {
+            writer.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
+        }
+    }
 }
 
-// Класс исключения длинных строк
+//  исключениe длинных строк
 class LineTooLongException extends RuntimeException {
     public LineTooLongException(String message) {
         super(message);
@@ -103,7 +147,7 @@ enum HttpMethod {
     GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH, UNKNOWN
 }
 
-// Класс для представления строки лог-файла
+// Класс строк лог-файла
 class LogEntry {
     private final String ipAddress;
     private final LocalDateTime dateTime;
@@ -115,7 +159,7 @@ class LogEntry {
     private final UserAgent userAgent;
 
     public LogEntry(String logLine) {
-        // Регулярное выражение для парсинга строки лога
+        // выражение для парсинга
         Pattern pattern;
         pattern = Pattern.compile("^(\\S+) - - \\[(.+?)\\] \"(\\S+) (\\S+) HTTP/\\d\\.\\d\" (\\d+) (\\d+) \"([^\"]*)\" \"([^\"]*)\"$");
         Matcher matcher = pattern.matcher(logLine);
@@ -146,6 +190,7 @@ class LogEntry {
             return LocalDateTime.now();
         }
     }
+
     private HttpMethod parseHttpMethod(String methodStr) {
         try {
             return HttpMethod.valueOf(methodStr);
@@ -169,10 +214,12 @@ class LogEntry {
 class UserAgent {
     private final String osType;
     private final String browser;
+    private final boolean isBot;
 
     public UserAgent(String userAgentString) {
         this.osType = detectOsType(userAgentString);
         this.browser = detectBrowser(userAgentString);
+        this.isBot = detectBot(userAgentString);
     }
 
     private String detectOsType(String userAgent) {
@@ -217,12 +264,21 @@ class UserAgent {
         }
     }
 
+    private boolean detectBot(String userAgent) {
+        if (userAgent == null || userAgent.isEmpty()) {
+            return false;
+        }
+        String ua = userAgent.toLowerCase();
+        return ua.contains("bot");
+    }
+
     // Геттеры
     public String getOsType() { return osType; }
     public String getBrowser() { return browser; }
+    public boolean isBot() { return isBot; }
 }
 
-// Класс для статистики
+// Класс статистики
 class Statistics {
     private int totalTraffic;
     private LocalDateTime minTime;
@@ -238,6 +294,11 @@ class Statistics {
     private Set<String> notFoundPages;
     private Map<String, Integer> browserFrequency;
 
+    // поля для требуемых метрик
+    private int humanVisits; // посещения реальными пользователями (не ботами)
+    private int errorRequests; // ошибочные запросы (4xx или 5xx)
+    private Set<String> uniqueHumanIPs; // уникальные IP реальных пользователей
+
     public Statistics() {
         this.totalTraffic = 0;
         this.minTime = null;
@@ -247,16 +308,21 @@ class Statistics {
         this.existingPages = new HashSet<String>();
         this.osFrequency = new HashMap<String, Integer>();
 
-        // Инициализация новых полей
+        // Инициализация существующих полей
         this.notFoundPages = new HashSet<String>();
         this.browserFrequency = new HashMap<String, Integer>();
+
+        // Инициализация новых полей
+        this.humanVisits = 0;
+        this.errorRequests = 0;
+        this.uniqueHumanIPs = new HashSet<String>();
     }
 
     public void addEntry(LogEntry entry) {
-        // Добавляем трафик
+        // Добавлен трафик
         this.totalTraffic += entry.getDataSize();
 
-        // Обновляем min и max пармтеры
+        // Обновляем min и max
         LocalDateTime entryTime = entry.getDateTime();
         if (minTime == null || entryTime.isBefore(minTime)) {
             minTime = entryTime;
@@ -286,8 +352,68 @@ class Statistics {
         // Собираем ОС
         osFrequency.put(os, osFrequency.getOrDefault(os, 0) + 1);
 
-        // Собираем браузеры
+        // по браузерам
         browserFrequency.put(browser, browserFrequency.getOrDefault(browser, 0) + 1);
+
+        // подсчеты для требуемых метрик
+        boolean isHuman = !userAgent.isBot();
+
+        // Подсчет посещений реальными пользователями
+        if (isHuman) {
+            humanVisits++;
+            uniqueHumanIPs.add(entry.getIpAddress());
+        }
+
+        // Подсчет ошибочных запросов (4xx или 5xx)
+        if (entry.getResponseCode() >= 400 && entry.getResponseCode() < 600) {
+            errorRequests++;
+        }
+    }
+
+    /**
+     * Метод подсчёта среднего количества посещений сайта за час
+     * @return среднее количество посещений реальными пользователями за час
+     */
+    public double getAverageVisitsPerHour() {
+        if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
+            return 0.0;
+        }
+
+        long hoursBetween = ChronoUnit.HOURS.between(minTime, maxTime);
+        if (hoursBetween == 0) {
+            hoursBetween = 1;
+        }
+
+        return (double) humanVisits / hoursBetween;
+    }
+
+    /**
+     * Метод подсчёта среднего количества ошибочных запросов в час
+     * @return среднее количество ошибочных запросов в час
+     */
+    public double getAverageErrorRequestsPerHour() {
+        if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
+            return 0.0;
+        }
+
+        long hoursBetween = ChronoUnit.HOURS.between(minTime, maxTime);
+        if (hoursBetween == 0) {
+            hoursBetween = 1;
+        }
+
+        return (double) errorRequests / hoursBetween;
+    }
+
+    /**
+     * Метод расчёта средней посещаемости одним пользователем
+     * @return среднее количество посещений на одного реального пользователя
+     */
+    public double getAverageVisitsPerUser() {
+        if (uniqueHumanIPs.isEmpty()) {
+            return 0.0;
+        }
+
+        return (double) humanVisits / uniqueHumanIPs.size();
     }
 
     /**
@@ -319,7 +445,7 @@ class Statistics {
             totalRequests += count;
         }
 
-        // Рассчитываем долю для каждой операционной системы
+        // Расчет % для каждой ос
         for (Map.Entry<String, Integer> entry : osFrequency.entrySet()) {
             String os = entry.getKey();
             int count = entry.getValue();
@@ -343,7 +469,7 @@ class Statistics {
             totalRequests += count;
         }
 
-        // Рассчитываем процент для каждого браузера
+        // Расяет % для каждого браузера
         for (Map.Entry<String, Integer> entry : browserFrequency.entrySet()) {
             String browser = entry.getKey();
             int count = entry.getValue();
@@ -372,11 +498,13 @@ class Statistics {
             System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
         }
     }
+
     public void printOsStatistics() {
         for (Map.Entry<String, Integer> entry : osStats.entrySet()) {
             System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
         }
     }
+
     // Геттеры
     public int getTotalTraffic() { return totalTraffic; }
     public LocalDateTime getMinTime() { return minTime; }
