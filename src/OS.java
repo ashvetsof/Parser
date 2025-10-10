@@ -295,31 +295,30 @@ class Statistics {
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
     private final Map<String, Integer> browserStats = new HashMap<String, Integer>();
-    private final Map<String, Integer> osStats;
+    private final Map<String, Integer> osStats = new HashMap<String, Integer>();
 
     // Существующие поля страниц и статистики ОС
     private final Set<String> existingPages;
     private final Map<String, Integer> osFrequency;
 
     // Новые поля несуществующих страниц и статистики браузеров
-    private Set<String> notFoundPages;
-    private Map<String, Integer> browserFrequency;
+    private final Set<String> notFoundPages;
+    private final Map<String, Integer> browserFrequency;
 
     // поля для требуемых метрик
     private int humanVisits; // посещения реальными пользователями (не ботами)
     private int errorRequests; // ошибочные запросы (4xx или 5xx)
-    private Set<String> uniqueHumanIPs; // уникальные IP реальных пользователей
+    private final Set<String> uniqueHumanIPs; // уникальные IP реальных пользователей
 
     // Новые поля для доп методов
-    private Map<Long, Integer> visitsPerSecond; // посещения по секундам (только реальные пользователи)
-    private Set<String> refererDomains; // домены рефереров
+    private final Map<Long, Integer> visitsPerSecond; // посещения по секундам (только реальные пользователи)
+    private final Set<String> refererDomains; // домены рефереров
     private final Map<String, Integer> visitsPerUser; // посещения по пользователям (IP-адреса реальных пользователей)
 
     public Statistics() {
         this.totalTraffic = 0;
         this.minTime = null;
         this.maxTime = null;
-        this.osStats = new HashMap<String, Integer>();
         this.existingPages = new HashSet<String>();
         this.osFrequency = new HashMap<String, Integer>();
 
@@ -334,7 +333,7 @@ class Statistics {
 
         // Инициализация дополнительных полей
         this.visitsPerSecond = new HashMap<Long, Integer>();
-        this.refererDomains = new HashSet<String>();
+        this.refererDomains = new HashSet<>();
         this.visitsPerUser = new HashMap<String, Integer>();
     }
 
