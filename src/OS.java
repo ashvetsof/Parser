@@ -294,12 +294,12 @@ class Statistics {
     private int totalTraffic;
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
-    private final Map<String, Integer> browserStats;
+    private final Map<String, Integer> browserStats = new HashMap<String, Integer>();
     private final Map<String, Integer> osStats;
 
     // Существующие поля страниц и статистики ОС
-    private Set<String> existingPages;
-    private Map<String, Integer> osFrequency;
+    private final Set<String> existingPages;
+    private final Map<String, Integer> osFrequency;
 
     // Новые поля несуществующих страниц и статистики браузеров
     private Set<String> notFoundPages;
@@ -313,13 +313,12 @@ class Statistics {
     // Новые поля для доп методов
     private Map<Long, Integer> visitsPerSecond; // посещения по секундам (только реальные пользователи)
     private Set<String> refererDomains; // домены рефереров
-    private Map<String, Integer> visitsPerUser; // посещения по пользователям (IP-адреса реальных пользователей)
+    private final Map<String, Integer> visitsPerUser; // посещения по пользователям (IP-адреса реальных пользователей)
 
     public Statistics() {
         this.totalTraffic = 0;
         this.minTime = null;
         this.maxTime = null;
-        this.browserStats = new HashMap<String, Integer>();
         this.osStats = new HashMap<String, Integer>();
         this.existingPages = new HashSet<String>();
         this.osFrequency = new HashMap<String, Integer>();
