@@ -603,9 +603,9 @@ class Statistics {
     }
 
     // Геттеры
-    public int getTotalTraffic() { return totalTraffic; }
-    public LocalDateTime getMinTime() { return minTime; }
-    public LocalDateTime getMaxTime() { return maxTime; }
+   // public int getTotalTraffic() { return totalTraffic; }
+    //public LocalDateTime getMinTime() { return minTime; }
+    //public LocalDateTime getMaxTime() { return maxTime; }
     public Map<String, Integer> getBrowserStats() { return browserStats; }
     public Map<String, Integer> getOsStats() { return osStats; }
 }
