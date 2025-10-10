@@ -162,8 +162,7 @@ enum HttpMethod {
 class LogEntry {
     private final String ipAddress;
     private final LocalDateTime dateTime;
-    private final HttpMethod method;
-    private final String path;
+    public final String path;
     private final int responseCode;
     private final int dataSize;
     private final String referer;
@@ -178,7 +177,7 @@ class LogEntry {
         if (matcher.find()) {
             this.ipAddress = matcher.group(1);
             this.dateTime = parseDateTime(matcher.group(2));
-            this.method = parseHttpMethod(matcher.group(3));
+            parseHttpMethod(matcher.group(3));
             this.path = matcher.group(4);
             this.responseCode = Integer.parseInt(matcher.group(5));
             this.dataSize = Integer.parseInt(matcher.group(6));
@@ -294,8 +293,8 @@ class Statistics {
     private int totalTraffic;
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
-    private final Map<String, Integer> browserStats = new HashMap<String, Integer>();
-    private final Map<String, Integer> osStats = new HashMap<String, Integer>();
+    private final Map<String, Integer> browserStats = new HashMap<>();
+    private final Map<String, Integer> osStats = new HashMap<>();
 
     // Существующие поля страниц и статистики ОС
     private final Set<String> existingPages;
@@ -319,22 +318,22 @@ class Statistics {
         this.totalTraffic = 0;
         this.minTime = null;
         this.maxTime = null;
-        this.existingPages = new HashSet<String>();
-        this.osFrequency = new HashMap<String, Integer>();
+        this.existingPages = new HashSet<>();
+        this.osFrequency = new HashMap<>();
 
         // Инициализация существующих полей
-        this.notFoundPages = new HashSet<String>();
-        this.browserFrequency = new HashMap<String, Integer>();
+        this.notFoundPages = new HashSet<>();
+        this.browserFrequency = new HashMap<>();
 
         // Инициализация новых полей
         this.humanVisits = 0;
         this.errorRequests = 0;
-        this.uniqueHumanIPs = new HashSet<String>();
+        this.uniqueHumanIPs = new HashSet<>();
 
         // Инициализация дополнительных полей
-        this.visitsPerSecond = new HashMap<Long, Integer>();
+        this.visitsPerSecond = new HashMap<>();
         this.refererDomains = new HashSet<>();
-        this.visitsPerUser = new HashMap<String, Integer>();
+        this.visitsPerUser = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -449,7 +448,7 @@ class Statistics {
      * @return Set<String> содержащий доменные имена рефереров
      */
     public Set<String> getRefererDomains() {
-        return new HashSet<String>(refererDomains);
+        return new HashSet<>(refererDomains);
     }
 
     /**
@@ -517,7 +516,7 @@ class Statistics {
      * @return Set<String> содержащий адреса существующих страниц
      */
     public Set<String> getExistingPages() {
-        return new HashSet<String>(existingPages);
+        return new HashSet<>(existingPages);
     }
 
     /**
@@ -525,7 +524,7 @@ class Statistics {
      * @return Set<String> содержащий адреса несуществующих страниц
      */
     public Set<String> getNotFoundPages() {
-        return new HashSet<String>(notFoundPages);
+        return new HashSet<>(notFoundPages);
     }
 
     /**
@@ -533,7 +532,7 @@ class Statistics {
      * @return Map<String, Double> где ключ - название ОС, значение - доля от общего количества
      */
     public Map<String, Double> getOsStatistics() {
-        Map<String, Double> osProportions = new HashMap<String, Double>();
+        Map<String, Double> osProportions = new HashMap<>();
 
         // Вычисляем общее количество записей
         int totalRequests = 0;
@@ -557,7 +556,7 @@ class Statistics {
      * @return Map<String, Double> где ключ - название браузера, значение - процент от общего количества
      */
     public Map<String, Double> getBrowserStatistics() {
-        Map<String, Double> browserProportions = new HashMap<String, Double>();
+        Map<String, Double> browserProportions = new HashMap<>();
 
         // Вычисляем общее количество записей
         int totalRequests = 0;
@@ -587,18 +586,6 @@ class Statistics {
         }
 
         return (double) totalTraffic / hoursBetween;
-    }
-
-    public void printBrowserStatistics() {
-        for (Map.Entry<String, Integer> entry : browserStats.entrySet()) {
-            System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
-        }
-    }
-
-    public void printOsStatistics() {
-        for (Map.Entry<String, Integer> entry : osStats.entrySet()) {
-            System.out.println("  " + entry.getKey() + ": " + entry.getValue() + " запросов");
-        }
     }
 
     // Геттеры
