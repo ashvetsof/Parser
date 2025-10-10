@@ -201,11 +201,10 @@ class LogEntry {
         }
     }
 
-    private HttpMethod parseHttpMethod(String methodStr) {
+    private void parseHttpMethod(String methodStr) {
         try {
-            return HttpMethod.valueOf(methodStr);
+            HttpMethod.valueOf(methodStr);
         } catch (IllegalArgumentException e) {
-            return HttpMethod.UNKNOWN;
         }
     }
 
