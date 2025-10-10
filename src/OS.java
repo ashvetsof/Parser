@@ -78,6 +78,17 @@ public class OS {
                 writer.printf("Среднее количество ошибочных запросов в час: %.2f\n", stats.getAverageErrorRequestsPerHour());
                 writer.printf("Средняя посещаемость одним пользователем: %.2f\n", stats.getAverageVisitsPerUser());
 
+                // Новые методы
+                writer.printf("Пиковая посещаемость сайта: %d посещений/секунду\n", stats.getPeakVisitsPerSecond());
+                writer.printf("Максимальная посещаемость одним пользователем: %d посещений\n", stats.getMaxVisitsPerUser());
+
+                // Список сайтов-рефереров
+                Set<String> refererDomains = stats.getRefererDomains();
+                writer.println("\nСайты, со страниц которых есть ссылки на текущий сайт (" + refererDomains.size() + "):");
+                for (String domain : refererDomains) {
+                    writer.println("  " + domain);
+                }
+
                 // статистик по браузерам и ОС
                 writer.println("\nСтатистика по браузерам:");
                 printBrowserStatisticsToFile(stats, writer);
@@ -100,7 +111,7 @@ public class OS {
 
                 // статистика ОС
                 Map<String, Double> osStatistics = stats.getOsStatistics();
-                writer.println("\nСтатистика операционных систем (%):");
+                writer.println("\nСтатистика операционных систем (доли):");
                 for (Map.Entry<String, Double> entry : osStatistics.entrySet()) {
                     writer.printf("  %s: %.2f%%\n", entry.getKey(), entry.getValue() * 100);
                 }
@@ -135,7 +146,7 @@ public class OS {
     }
 }
 
-//  исключениe длинных строк
+// исключениe длинных строк
 class LineTooLongException extends RuntimeException {
     public LineTooLongException(String message) {
         super(message);
@@ -161,7 +172,7 @@ class LogEntry {
     public LogEntry(String logLine) {
         // выражение для парсинга
         Pattern pattern;
-        pattern = Pattern.compile("^(\\S+) - - \\[(.+?)\\] \"(\\S+) (\\S+) HTTP/\\d\\.\\d\" (\\d+) (\\d+) \"([^\"]*)\" \"([^\"]*)\"$");
+        pattern = Pattern.compile("^(\\S+) - - \\[(.+?)] \"(\\S+) (\\S+) HTTP/\\d\\.\\d\" (\\d+) (\\d+) \"([^\"]*)\" \"([^\"]*)\"$");
         Matcher matcher = pattern.matcher(logLine);
 
         if (matcher.find()) {
@@ -202,7 +213,7 @@ class LogEntry {
     // Геттеры
     public String getIpAddress() { return ipAddress; }
     public LocalDateTime getDateTime() { return dateTime; }
-    public HttpMethod getMethod() { return method; }
+    //public HttpMethod getMethod() { return method; }
     public String getPath() { return path; }
     public int getResponseCode() { return responseCode; }
     public int getDataSize() { return dataSize; }
@@ -278,13 +289,13 @@ class UserAgent {
     public boolean isBot() { return isBot; }
 }
 
-// Класс статистики
+// Класс для статистики
 class Statistics {
     private int totalTraffic;
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
-    private Map<String, Integer> browserStats;
-    private Map<String, Integer> osStats;
+    private final Map<String, Integer> browserStats;
+    private final Map<String, Integer> osStats;
 
     // Существующие поля страниц и статистики ОС
     private Set<String> existingPages;
@@ -298,6 +309,11 @@ class Statistics {
     private int humanVisits; // посещения реальными пользователями (не ботами)
     private int errorRequests; // ошибочные запросы (4xx или 5xx)
     private Set<String> uniqueHumanIPs; // уникальные IP реальных пользователей
+
+    // Новые поля для доп методов
+    private Map<Long, Integer> visitsPerSecond; // посещения по секундам (только реальные пользователи)
+    private Set<String> refererDomains; // домены рефереров
+    private Map<String, Integer> visitsPerUser; // посещения по пользователям (IP-адреса реальных пользователей)
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -316,6 +332,11 @@ class Statistics {
         this.humanVisits = 0;
         this.errorRequests = 0;
         this.uniqueHumanIPs = new HashSet<String>();
+
+        // Инициализация дополнительных полей
+        this.visitsPerSecond = new HashMap<Long, Integer>();
+        this.refererDomains = new HashSet<String>();
+        this.visitsPerUser = new HashMap<String, Integer>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -362,12 +383,89 @@ class Statistics {
         if (isHuman) {
             humanVisits++;
             uniqueHumanIPs.add(entry.getIpAddress());
+
+            // Подсчет посещений по секундам (только реальные пользователи)
+            long secondKey = entryTime.toEpochSecond(java.time.ZoneOffset.UTC);
+            visitsPerSecond.put(secondKey, visitsPerSecond.getOrDefault(secondKey, 0) + 1);
+
+            // Подсчет посещений по пользователям (IP-адреса реальных пользователей)
+            String ip = entry.getIpAddress();
+            visitsPerUser.put(ip, visitsPerUser.getOrDefault(ip, 0) + 1);
         }
 
         // Подсчет ошибочных запросов (4xx или 5xx)
         if (entry.getResponseCode() >= 400 && entry.getResponseCode() < 600) {
             errorRequests++;
         }
+
+        // Сбор доменов рефереров
+        if (entry.getReferer() != null && !entry.getReferer().equals("-")) {
+            String domain = extractDomainFromReferer(entry.getReferer());
+            if (domain != null) {
+                refererDomains.add(domain);
+            }
+        }
+    }
+
+    /**
+     * Извлекает домен из referer
+     * @param referer строка referer
+     * @return доменное имя или null, если извлечь не удалось
+     */
+    private String extractDomainFromReferer(String referer) {
+        try {
+            // Убираем протокол и путь, оставляем только домен
+            String domain = referer.replaceFirst("^(https?://)?(www\\.)?", "");
+            // Убираем путь после домена
+            int slashIndex = domain.indexOf('/');
+            if (slashIndex != -1) {
+                domain = domain.substring(0, slashIndex);
+            }
+            // Убираем порт если есть
+            int colonIndex = domain.indexOf(':');
+            if (colonIndex != -1) {
+                domain = domain.substring(0, colonIndex);
+            }
+            return domain;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Метод расчёта пиковой посещаемости сайта (в секунду)
+     * @return максимальное количество посещений за одну секунду
+     */
+    public int getPeakVisitsPerSecond() {
+        int maxVisits = 0;
+        for (int visits : visitsPerSecond.values()) {
+            if (visits > maxVisits) {
+                maxVisits = visits;
+            }
+        }
+        return maxVisits;
+    }
+
+    /**
+     * Метод, возвращающий список сайтов, со страниц которых есть ссылки на текущий сайт
+     * @return Set<String> содержащий доменные имена рефереров
+     */
+    public Set<String> getRefererDomains() {
+        return new HashSet<String>(refererDomains);
+    }
+
+    /**
+     * Метод расчёта максимальной посещаемости одним пользователем
+     * @return максимальное количество посещений одним пользователем
+     */
+    public int getMaxVisitsPerUser() {
+        int maxVisits = 0;
+        for (int visits : visitsPerUser.values()) {
+            if (visits > maxVisits) {
+                maxVisits = visits;
+            }
+        }
+        return maxVisits;
     }
 
     /**
