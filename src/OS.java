@@ -204,7 +204,7 @@ class LogEntry {
     private void parseHttpMethod(String methodStr) {
         try {
             HttpMethod.valueOf(methodStr);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
         }
     }
 
